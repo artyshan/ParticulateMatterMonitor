@@ -1,34 +1,53 @@
+
+
 #include <SoftwareSerial.h>
 
 #define DEBUG true
 
 SoftwareSerial A7Serial(8, 9); //RX, TX
 
-String response = "";
+/*
+ * Default baud rates for serial ports
+ */
 
-int defaultA7BaudRate 		= 115200;
-int defaultDebugBaudRate 	= 9600;
+const int defaultA7BaudRate 	= 115200;
+const int defaultDebugBaudRate 	= 9600;
+
+/*
+ * Remote addres and port
+ */
+
+const String 	remoteAddress	= "data.sparkfun.com";
+const int 		remotePort		= 80;
+
+/* 
+ * Access Point Name for the Internet
+ */
+
+const String AccessPointName	= "internet";
+
+String response = "";
 
 
 // the setup routine runs once when you press reset:
 
 void setup() 
 {   
-	pinMode(13, OUTPUT);
 	
 	Serial.begin(defaultDebugBaudRate);
+
+	/*
+	
 	A7Serial.begin(defaultA7BaudRate);
 	
 	// Setting A7 to work on 9600 bps
 	
-	response = sendAtCommand("AT+IPR=9600");
-	
-	if(DEBUG)
-	{
-		Serial.println("A7 response: " + response);
-	}
+	response = sendAtCommand("AT+IPR=9600", 1000);
 	
 	A7Serial.end();
+
+	*/
+	
 	A7Serial.begin(9600);
 	A7Serial.setTimeout(2000);
 	
@@ -36,7 +55,15 @@ void setup()
 	
 	// Disabling command echo
 	
-	response = sendAtCommand("ATE0");
+	response = sendAtCommand("ATE0", 500);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// Setting errors to verbose mode
+	
+	response = sendAtCommand("AT+CMEE=2", 500);
 	if(DEBUG)
 	{
 		Serial.println("A7 response: " + response);
@@ -44,12 +71,70 @@ void setup()
 	
 	// Testing connection with A7 module
 	
-	response = sendAtCommand("AT");
+	response = sendAtCommand("AT", 200);
 	if(DEBUG)
 	{
 		Serial.println("A7 response: " + response);
 	}
 	
+	// Connecting to packet Domain service
+	
+	response = sendAtCommand("AT+CGATT=1", 1000);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// Defining PDP context
+	
+	response = sendAtCommand("AT+CGDCONT=1,\"IP\",\"" + AccessPointName + "\"", 1000);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// DEBUG
+	
+	response = sendAtCommand("AT+CIPSTATUS", 500);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// Activating PDP context
+	
+	response = sendAtCommand("AT+CGACT=1,1", 1000);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// DEBUG
+	
+	response = sendAtCommand("AT+CIPSTATUS", 500);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// Begin TCP/IP connection
+	
+	response = sendAtCommand("AT+CIPSTART=\"TCP\",\"" + remoteAddress + "\"," + remotePort , 8000);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	// DEBUG
+	
+	response = sendAtCommand("AT+CIPSTATUS", 500);
+	if(DEBUG)
+	{
+		Serial.println("A7 response: " + response);
+	}
+	
+	
+	/*
 	String test = String('\r' + '\n' + "OK" + '\r' + '\n');
 	
 	Serial.println("test: ");
@@ -70,18 +155,11 @@ void setup()
 	{
 		digitalWrite(13, HIGH);
 	}
-	
+	*/
 
 	
 }
 
-
-void setA7BaudRate(int baudRate)
-{
-	sendAtCommand(String("AT+IPR=" + baudRate));
-	delay(200);
-	A7Serial.end();
-}
 
 void flushA7Serial()
 {
@@ -104,7 +182,7 @@ void flushA7Serial()
  * A7Serial buffer is flushed each time before sending a command
  */
 
-String sendAtCommand(String command)
+String sendAtCommand(String command, int delayTime)
 {
 	flushA7Serial();
 	
@@ -115,7 +193,7 @@ String sendAtCommand(String command)
 	
 	A7Serial.print(command);
 	A7Serial.write(13);
-	delay(500);
+	delay(delayTime);
 	return A7Serial.readString();
 	
 }
