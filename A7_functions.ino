@@ -10,6 +10,36 @@ void A7_flush()
 	}
 }
 
+/*
+ * Sending single AT command to A7 module
+ * Command given as a parameter shall not be ended with any special character
+ * <CR> character is appended to command
+ * Returns a string containing full response from A7 module (with all special characters such as CR and LF)
+ * A7Serial buffer is flushed each time before sending a command
+ */
+
+String A7_sendCommand(String command, int delayTime)
+{
+	A7_flush();
+	
+	if(DEBUG)
+	{
+		Serial.println("Sending AT command: " + command);	
+	}
+	
+	A7Serial.print(command);
+	A7Serial.write(13);
+	delay(delayTime);
+	//return A7Serial.readString();
+	return "";
+	
+}
+
+void A7_connectToNetwork()
+{
+	
+}
+
 String A7_getLine()
 {
 	String result = String("");

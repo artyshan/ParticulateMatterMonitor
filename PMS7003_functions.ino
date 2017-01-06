@@ -2,7 +2,9 @@
  * ------------------------- PMS7003 related functions ---------------------------
  */
 
-
+/*
+ * Flushes PMS7003Serial
+ */
 
 void PMS7003_flush()
 {
@@ -13,7 +15,7 @@ void PMS7003_flush()
 }
 
 /*
- * 
+ * Reads two bytes from PMS7003Serial as uint16_t value
  */
 
 uint16_t PMS7003_readUint16()
@@ -94,11 +96,12 @@ int PMS7003_readFrame(struct PMS7003_frameStruct * PMS7003_frameStructPointer)
 /*
  * Checks validity of PMS7003 frame 
  * Adds up bytes of all fields except for check sum
- * For more details see Annex A: PMS7003 Transfer Protocol of PMS7003 manual
+ * For more details see Appendix A of PMS7003 manual
  */
 
 int PMS7003_checkFrame(struct PMS7003_frameStruct * PMS7003_frameStructPointer)
 {
+	
 	uint16_t sum = 0x42 + 0x4d + 28 +
 		sumOfBytes(PMS7003_frameStructPointer->PM1_0_CF1_concentration) + 
 		sumOfBytes(PMS7003_frameStructPointer->PM2_5_CF1_concentration) + 
@@ -123,6 +126,10 @@ int PMS7003_checkFrame(struct PMS7003_frameStruct * PMS7003_frameStructPointer)
 		return PMS7003_FRAME_INVALID;	
 	}
 }
+
+/*
+ * Function returning sum of bytes of two-byte value
+ */
 
 uint16_t sumOfBytes(uint16_t data)
 {
