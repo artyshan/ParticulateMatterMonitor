@@ -15,6 +15,19 @@ void PMS7003_flush()
 }
 
 /*
+ * Initializes connection with PMS7003
+ */
+
+void PMS7003_init()
+{
+	PMS7003Serial.begin(PMS7003_defaultBaudRate);
+	
+	// Setting PMS7003 to passive mode
+	
+	PMS7003Serial.write(PMS7003_COMMAND_PASSIVE, 7);
+}
+
+/*
  * Reads two bytes from PMS7003Serial as uint16_t value
  */
 
@@ -96,7 +109,7 @@ int PMS7003_readFrame(struct PMS7003_frameStruct * PMS7003_frameStructPointer)
 /*
  * Checks validity of PMS7003 frame 
  * Adds up bytes of all fields except for check sum
- * For more details see Appendix A of PMS7003 manual
+ * For more details see Appendix A of PMS7003 datasheet
  */
 
 int PMS7003_checkFrame(struct PMS7003_frameStruct * PMS7003_frameStructPointer)
